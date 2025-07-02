@@ -16,21 +16,18 @@ import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
 import { BadgeCheckIcon } from "lucide-react";
 
+// dynamic import for ratings list
 const RatingsList = dynamic(() => import("@/components/course-actions/RatingsList"), {
   loading: () => <p>Loading ratings...</p>,
 });
 
+// Optional static metadata
 export const metadata: Metadata = {
   title: "Course Detail",
 };
 
-interface PageProps {
-  params: {
-    id: string;
-  };
-}
-
-export default async function CoursePage({ params }: PageProps) {
+// ✅ This is all you need — no custom interface or PageProps type required
+export default async function CoursePage({ params }: { params: { id: string } }) {
   await connectDB();
 
   if (!mongoose.Types.ObjectId.isValid(params.id)) {
