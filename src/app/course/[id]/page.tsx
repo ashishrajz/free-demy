@@ -10,27 +10,18 @@ import AddToWishlistButton from "@/components/course-actions/AddToWishlistButton
 import EnrollNowButton from "@/components/course-actions/EnrollNowButton";
 import { currentUser } from "@clerk/nextjs/server";
 import { getUserByClerkId } from "@/actions/user.actions";
-import RatingFormWrapper from "@/components/course-actions/RatingFormWrapper";
-
-
-import dynamic from "next/dynamic";
 import { Suspense } from "react";
+import RatingsList from "@/components/course-actions/RatingsList";
+import RatingForm from "@/components/course-actions/RatingForm";
 import { Badge } from "@/components/ui/badge";
 import { BadgeCheckIcon } from "lucide-react";
 
-const RatingsList = dynamic(() => import("@/components/course-actions/RatingsList"), {
-  loading: () => <p>Loading ratings...</p>,
-});
-
-// ✅ Works in server component — export metadata
 export const metadata: Metadata = {
   title: "Course Detail",
 };
 
 interface PageProps {
-  params: {
-    id: string;
-  };
+  params: { id: string };
 }
 
 export default async function CoursePage({ params }: PageProps) {
@@ -41,8 +32,6 @@ export default async function CoursePage({ params }: PageProps) {
   }
 
   const course = await Course.findById(params.id).lean();
-  if (!course) return notFound();
-
   const ratingStats = await Rating.aggregate([
     { $match: { courseId: new mongoose.Types.ObjectId(params.id) } },
     {
@@ -53,6 +42,8 @@ export default async function CoursePage({ params }: PageProps) {
       },
     },
   ]);
+
+  if (!course) return notFound();
 
   const courseRating = ratingStats[0] || { avgRating: 0, totalRatings: 0 };
   const totalLessons = course.sections.reduce(
@@ -99,12 +90,10 @@ export default async function CoursePage({ params }: PageProps) {
               <div className="text-2xl font-bold text-gray-900">
                 {course.price > 0 ? `₹${course.price.toFixed(2)}` : "Free"}
               </div>
-
               <div className="flex gap-2">
                 <AddToCartButtonn courseId={course._id.toString()} className="w-6/7" />
                 <AddToWishlistButton courseId={course._id.toString()} className="w-1/7" />
               </div>
-
               <EnrollNowButton courseId={course._id.toString()} />
             </div>
           </div>
@@ -137,8 +126,10 @@ export default async function CoursePage({ params }: PageProps) {
         {isEnrolled && (
           <div className="mt-10">
             <h3 className="text-2xl font-semibold mb-2">Rate this course</h3>
-            <RatingFormWrapper courseId={course._id.toString()} userId={dbUser?._id.toString()} />
-
+            <RatingForm
+              courseId={course._id.toString()}
+              userId={dbUser?._id.toString()}
+            />
           </div>
         )}
 
@@ -152,4 +143,3 @@ export default async function CoursePage({ params }: PageProps) {
     </div>
   );
 }
-
