@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { Metadata } from "next";
 import { connectDB } from "@/lib/db";
 import Course from "@/lib/models/course.model";
 import Rating from "@/lib/models/rating.model";
@@ -10,33 +9,34 @@ import AddToWishlistButton from "@/components/course-actions/AddToWishlistButton
 import EnrollNowButton from "@/components/course-actions/EnrollNowButton";
 import { currentUser } from "@clerk/nextjs/server";
 import { getUserByClerkId } from "@/actions/user.actions";
-import RatingForm from "@/components/course-actions/RatingFormWrapper";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
 import { BadgeCheckIcon } from "lucide-react";
 
-// If you want to set metadata
-export const metadata: Metadata = {
+const RatingsList = dynamic(() => import("@/components/course-actions/RatingsList"), {
+  ssr: false,
+  loading: () => <p>Loading ratings...</p>,
+});
+
+export const metadata = {
   title: "Course Detail",
 };
 
-// 👇 FIX: Define props interface for Next.js
-interface CoursePageProps {
-  params: { id: string };
-}
+export default async function CoursePage(props: any) {
+  const id = props?.params?.id;
 
-// ✅ Final fixed version of your dynamic route page
-export default async function CoursePage({ params }: CoursePageProps) {
   await connectDB();
 
-  if (!mongoose.Types.ObjectId.isValid(params.id)) notFound();
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    notFound();
+  }
 
-  const course = await Course.findById(params.id).lean();
-  if (!course) notFound();
+  const course = await Course.findById(id).lean();
+  if (!course) return notFound();
 
   const ratingStats = await Rating.aggregate([
-    { $match: { courseId: new mongoose.Types.ObjectId(params.id) } },
+    { $match: { courseId: new mongoose.Types.ObjectId(id) } },
     {
       $group: {
         _id: null,
@@ -88,10 +88,12 @@ export default async function CoursePage({ params }: CoursePageProps) {
               <div className="text-2xl font-bold text-gray-900">
                 {course.price > 0 ? `₹${course.price.toFixed(2)}` : "Free"}
               </div>
+
               <div className="flex gap-2">
                 <AddToCartButtonn courseId={course._id.toString()} className="w-6/7" />
                 <AddToWishlistButton courseId={course._id.toString()} className="w-1/7" />
               </div>
+
               <EnrollNowButton courseId={course._id.toString()} />
             </div>
           </div>
@@ -124,7 +126,9 @@ export default async function CoursePage({ params }: CoursePageProps) {
         {isEnrolled && (
           <div className="mt-10">
             <h3 className="text-2xl font-semibold mb-2">Rate this course</h3>
-            <RatingForm courseId={course._id.toString()} userId={dbUser?._id.toString()} />
+            <Suspense fallback={<p>Loading rating form...</p>}>
+              <RatingsList courseId={course._id.toString()} />
+            </Suspense>
           </div>
         )}
       </div>
