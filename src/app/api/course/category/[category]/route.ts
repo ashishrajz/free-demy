@@ -14,18 +14,14 @@ interface LeanCourse {
   category: string;
 }
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { category: string } }
-) {
+export async function GET(req: NextRequest, context: any) {
   try {
     await connectDB();
 
-    const rawCategory = decodeURIComponent(params.category);
+    const rawCategory = decodeURIComponent(context.params.category);
     const category =
       rawCategory.charAt(0).toUpperCase() + rawCategory.slice(1).toLowerCase();
 
-    // 👇 Tell TypeScript what shape the data will be
     const courses = await Course.find({ category })
       .select("title description thumbnailUrl price authorName category")
       .lean<LeanCourse[]>();
