@@ -1,5 +1,3 @@
-// app/course/[id]/page.tsx
-
 import { notFound } from "next/navigation";
 import { connectDB } from "@/lib/db";
 import Course from "@/lib/models/course.model";
@@ -17,11 +15,19 @@ import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
 import { BadgeCheckIcon } from "lucide-react";
 
-export const metadata = {
+import { type Metadata } from "next";
+
+export const metadata: Metadata = {
   title: "Course Detail",
 };
 
-export default async function CoursePage({ params }: any) {
+type Props = {
+  params: {
+    id: string;
+  };
+};
+
+export default async function CoursePage({ params }: Props) {
   await connectDB();
 
   const courseId = params.id;
@@ -69,10 +75,7 @@ export default async function CoursePage({ params }: any) {
               ★ {courseRating.avgRating.toFixed(1)} ({courseRating.totalRatings})
             </div>
             <div className="text-gray-400 mb-2">
-              Created{" "}
-              {formatDistanceToNow(new Date(course.createdAt), {
-                addSuffix: true,
-              })}
+              Created {formatDistanceToNow(new Date(course.createdAt), { addSuffix: true })}
             </div>
             <div className="text-white font-medium mb-2">By {course.authorName}</div>
           </div>
