@@ -6,10 +6,7 @@ import { connectDB } from "@/lib/db";
 import Course from "@/lib/models/course.model";
 import { getUserByClerkId } from "@/actions/user.actions";
 
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(req: NextRequest, context: any) {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -34,8 +31,10 @@ export async function PUT(
       status,
     } = body;
 
+    const courseId = context.params.id; // ✅ Safely access ID
+
     const course = await Course.findOne({
-      _id: params.id,
+      _id: courseId,
       instructorId: userId,
     });
 
