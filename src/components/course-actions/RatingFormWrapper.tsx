@@ -1,19 +1,8 @@
+// src/components/course-actions/RatingsListWrapper.tsx
 "use client";
 
-import dynamic from "next/dynamic";
+import RatingsList from "./RatingsList";
 
-const RatingForm = dynamic(() => import("./RatingForm"), {
-  ssr: false,
-  loading: () => <p>Loading rating form...</p>,
-});
-
-export default function RatingFormWrapper({
-  courseId,
-  userId,
-}: {
-  courseId: string;
-  userId?: string;
-}) {
-  if (!userId) return null;
-  return <RatingForm courseId={courseId} userId={userId} />;
+export default function RatingsListWrapper({ courseId }: { courseId: string }) {
+  return <RatingsList courseId={courseId} />;
 }
