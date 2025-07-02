@@ -1,44 +1,38 @@
 // app/course/[id]/page.tsx
 
 import { notFound } from "next/navigation";
-import { Metadata } from "next";
-import mongoose from "mongoose";
 import { connectDB } from "@/lib/db";
 import Course from "@/lib/models/course.model";
 import Rating from "@/lib/models/rating.model";
-import { currentUser } from "@clerk/nextjs/server";
-import { getUserByClerkId } from "@/actions/user.actions";
 import { formatDistanceToNow } from "date-fns";
-import { Badge } from "@/components/ui/badge";
-import { BadgeCheckIcon } from "lucide-react";
+import mongoose from "mongoose";
 import AddToCartButtonn from "@/components/course-actions/AddToCartButtonn";
 import AddToWishlistButton from "@/components/course-actions/AddToWishlistButton";
 import EnrollNowButton from "@/components/course-actions/EnrollNowButton";
-import RatingsListWrapper from "@/components/course-actions/RatingsListWrapper";
+import { currentUser } from "@clerk/nextjs/server";
+import { getUserByClerkId } from "@/actions/user.actions";
 import RatingForm from "@/components/course-actions/RatingForm";
+import RatingsListWrapper from "@/components/course-actions/RatingsListWrapper";
+import { Suspense } from "react";
+import { Badge } from "@/components/ui/badge";
+import { BadgeCheckIcon } from "lucide-react";
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "Course Detail",
 };
 
-interface PageProps {
-  params: {
-    id: string;
-  };
-}
-
-export default async function CoursePage({ params }: PageProps) {
+export default async function CoursePage({ params }: any) {
   await connectDB();
 
-  if (!mongoose.Types.ObjectId.isValid(params.id)) {
-    notFound();
-  }
+  const courseId = params.id;
 
-  const course = await Course.findById(params.id).lean();
+  if (!mongoose.Types.ObjectId.isValid(courseId)) notFound();
+
+  const course = await Course.findById(courseId).lean();
   if (!course) return notFound();
 
   const ratingStats = await Rating.aggregate([
-    { $match: { courseId: new mongoose.Types.ObjectId(params.id) } },
+    { $match: { courseId: new mongoose.Types.ObjectId(courseId) } },
     {
       $group: {
         _id: null,
@@ -75,7 +69,10 @@ export default async function CoursePage({ params }: PageProps) {
               ★ {courseRating.avgRating.toFixed(1)} ({courseRating.totalRatings})
             </div>
             <div className="text-gray-400 mb-2">
-              Created {formatDistanceToNow(new Date(course.createdAt), { addSuffix: true })}
+              Created{" "}
+              {formatDistanceToNow(new Date(course.createdAt), {
+                addSuffix: true,
+              })}
             </div>
             <div className="text-white font-medium mb-2">By {course.authorName}</div>
           </div>
@@ -90,10 +87,12 @@ export default async function CoursePage({ params }: PageProps) {
               <div className="text-2xl font-bold text-gray-900">
                 {course.price > 0 ? `₹${course.price.toFixed(2)}` : "Free"}
               </div>
+
               <div className="flex gap-2">
                 <AddToCartButtonn courseId={course._id.toString()} className="w-6/7" />
                 <AddToWishlistButton courseId={course._id.toString()} className="w-1/7" />
               </div>
+
               <EnrollNowButton courseId={course._id.toString()} />
             </div>
           </div>
@@ -132,7 +131,9 @@ export default async function CoursePage({ params }: PageProps) {
 
         <div className="mt-8">
           <h2 className="text-xl font-semibold mb-4">Student Ratings</h2>
-          <RatingsListWrapper courseId={course._id.toString()} />
+          <Suspense fallback={<p>Loading ratings...</p>}>
+            <RatingsListWrapper courseId={course._id.toString()} />
+          </Suspense>
         </div>
       </div>
     </div>
