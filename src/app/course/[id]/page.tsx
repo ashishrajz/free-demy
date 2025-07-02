@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { Metadata } from "next";
 import { connectDB } from "@/lib/db";
 import Course from "@/lib/models/course.model";
 import Rating from "@/lib/models/rating.model";
@@ -9,34 +10,26 @@ import AddToWishlistButton from "@/components/course-actions/AddToWishlistButton
 import EnrollNowButton from "@/components/course-actions/EnrollNowButton";
 import { currentUser } from "@clerk/nextjs/server";
 import { getUserByClerkId } from "@/actions/user.actions";
-import dynamic from "next/dynamic";
+import RatingForm from "@/components/course-actions/RatingForm";
+import RatingsListWrapper from "@/components/course-actions/RatingsListWrapper";
 import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
 import { BadgeCheckIcon } from "lucide-react";
 
-const RatingsList = dynamic(() => import("@/components/course-actions/RatingsList"), {
-  ssr: false,
-  loading: () => <p>Loading ratings...</p>,
-});
-
-export const metadata = {
+export const metadata: Metadata = {
   title: "Course Detail",
 };
 
-export default async function CoursePage(props: any) {
-  const id = props?.params?.id;
-
+export default async function CoursePage({ params }: { params: { id: string } }) {
   await connectDB();
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
+  if (!mongoose.Types.ObjectId.isValid(params.id)) {
     notFound();
   }
 
-  const course = await Course.findById(id).lean();
-  if (!course) return notFound();
-
+  const course = await Course.findById(params.id).lean();
   const ratingStats = await Rating.aggregate([
-    { $match: { courseId: new mongoose.Types.ObjectId(id) } },
+    { $match: { courseId: new mongoose.Types.ObjectId(params.id) } },
     {
       $group: {
         _id: null,
@@ -45,6 +38,8 @@ export default async function CoursePage(props: any) {
       },
     },
   ]);
+
+  if (!course) return notFound();
 
   const courseRating = ratingStats[0] || { avgRating: 0, totalRatings: 0 };
   const totalLessons = course.sections.reduce(
@@ -73,7 +68,10 @@ export default async function CoursePage(props: any) {
               ★ {courseRating.avgRating.toFixed(1)} ({courseRating.totalRatings})
             </div>
             <div className="text-gray-400 mb-2">
-              Created {formatDistanceToNow(new Date(course.createdAt), { addSuffix: true })}
+              Created{" "}
+              {formatDistanceToNow(new Date(course.createdAt), {
+                addSuffix: true,
+              })}
             </div>
             <div className="text-white font-medium mb-2">By {course.authorName}</div>
           </div>
@@ -115,23 +113,3 @@ export default async function CoursePage(props: any) {
                 {section.title}
               </summary>
               <ul className="px-6 py-2 list-disc list-inside text-gray-400">
-                {section.lessons.map((lesson: any, j: number) => (
-                  <li key={j}>{lesson.title}</li>
-                ))}
-              </ul>
-            </details>
-          ))}
-        </div>
-
-        {isEnrolled && (
-          <div className="mt-10">
-            <h3 className="text-2xl font-semibold mb-2">Rate this course</h3>
-            <Suspense fallback={<p>Loading rating form...</p>}>
-              <RatingsList courseId={course._id.toString()} />
-            </Suspense>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
