@@ -4,7 +4,9 @@ import { connectDB } from "@/lib/db";
 import User from "@/lib/models/user.model";
 import { NextResponse } from "next/server";
 
-export async function DELETE(_: any, { params }: { params: { id: string } }) {
+export async function DELETEreq: Request,
+  context: { params: { id: string } }
+) {
   await connectDB();
   const user = await currentUser();
   if (!user) {
