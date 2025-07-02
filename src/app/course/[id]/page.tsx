@@ -1,3 +1,5 @@
+// src/app/course/[id]/page.tsx
+
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { connectDB } from "@/lib/db";
@@ -10,21 +12,24 @@ import AddToWishlistButton from "@/components/course-actions/AddToWishlistButton
 import EnrollNowButton from "@/components/course-actions/EnrollNowButton";
 import { currentUser } from "@clerk/nextjs/server";
 import { getUserByClerkId } from "@/actions/user.actions";
+import dynamic from "next/dynamic";
 import { Suspense } from "react";
-import RatingsList from "@/components/course-actions/RatingsList";
-import RatingForm from "@/components/course-actions/RatingForm";
 import { Badge } from "@/components/ui/badge";
 import { BadgeCheckIcon } from "lucide-react";
+
+const RatingsList = dynamic(() => import("@/components/course-actions/RatingsList"), {
+  loading: () => <p>Loading ratings...</p>,
+});
 
 export const metadata: Metadata = {
   title: "Course Detail",
 };
 
-interface PageProps {
+export default async function CoursePage({
+  params,
+}: {
   params: { id: string };
-}
-
-export default async function CoursePage({ params }: PageProps) {
+}) {
   await connectDB();
 
   if (!mongoose.Types.ObjectId.isValid(params.id)) {
@@ -32,6 +37,9 @@ export default async function CoursePage({ params }: PageProps) {
   }
 
   const course = await Course.findById(params.id).lean();
+
+  if (!course) return notFound();
+
   const ratingStats = await Rating.aggregate([
     { $match: { courseId: new mongoose.Types.ObjectId(params.id) } },
     {
@@ -42,8 +50,6 @@ export default async function CoursePage({ params }: PageProps) {
       },
     },
   ]);
-
-  if (!course) return notFound();
 
   const courseRating = ratingStats[0] || { avgRating: 0, totalRatings: 0 };
   const totalLessons = course.sections.reduce(
@@ -72,10 +78,7 @@ export default async function CoursePage({ params }: PageProps) {
               ★ {courseRating.avgRating.toFixed(1)} ({courseRating.totalRatings})
             </div>
             <div className="text-gray-400 mb-2">
-              Created{" "}
-              {formatDistanceToNow(new Date(course.createdAt), {
-                addSuffix: true,
-              })}
+              Created {formatDistanceToNow(new Date(course.createdAt), { addSuffix: true })}
             </div>
             <div className="text-white font-medium mb-2">By {course.authorName}</div>
           </div>
@@ -86,14 +89,17 @@ export default async function CoursePage({ params }: PageProps) {
               alt={course.title}
               className="w-full h-40 object-cover rounded mb-4"
             />
+
             <div className="flex flex-col gap-3">
               <div className="text-2xl font-bold text-gray-900">
                 {course.price > 0 ? `₹${course.price.toFixed(2)}` : "Free"}
               </div>
+
               <div className="flex gap-2">
                 <AddToCartButtonn courseId={course._id.toString()} className="w-6/7" />
                 <AddToWishlistButton courseId={course._id.toString()} className="w-1/7" />
               </div>
+
               <EnrollNowButton courseId={course._id.toString()} />
             </div>
           </div>
@@ -126,10 +132,20 @@ export default async function CoursePage({ params }: PageProps) {
         {isEnrolled && (
           <div className="mt-10">
             <h3 className="text-2xl font-semibold mb-2">Rate this course</h3>
-            <RatingForm
-              courseId={course._id.toString()}
-              userId={dbUser?._id.toString()}
-            />
+            {/* Use wrapper client component here */}
+            <Suspense fallback={<p>Loading rating form...</p>}>
+              <dynamic
+                ssr={false}
+                loader={() => import("@/components/course-actions/RatingFormWrapper")}
+              >
+                {(RatingFormWrapper) => (
+                  <RatingFormWrapper
+                    courseId={course._id.toString()}
+                    userId={dbUser?._id.toString()}
+                  />
+                )}
+              </dynamic>
+            </Suspense>
           </div>
         )}
 
