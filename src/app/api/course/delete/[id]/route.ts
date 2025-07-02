@@ -7,7 +7,7 @@ import Course from "@/lib/models/course.model";
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: any
 ) {
   try {
     await connectDB();
