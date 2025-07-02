@@ -24,13 +24,12 @@ export const metadata: Metadata = {
   title: "Course Detail",
 };
 
-interface PageProps {
-  params: {
-    id: string;
-  };
-}
+export default async function CoursePage({
+  params,
+}: {
+  params: { id: string };
+}) {
 
-export default async function CoursePage({ params }: PageProps) {
   await connectDB();
 
   if (!mongoose.Types.ObjectId.isValid(params.id)) {
