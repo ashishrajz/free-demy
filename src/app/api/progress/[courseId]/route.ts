@@ -1,3 +1,5 @@
+// src/app/api/course/progress/[courseId]/route.ts
+
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { connectDB } from "@/lib/db";
@@ -17,17 +19,15 @@ interface CourseWithSections {
   }[];
 }
 
-// ✅ Proper way to define the function to receive params
 export async function GET(
   req: NextRequest,
-  { params }: { params: { courseId: string } }
+  context: any // ✅ Fix for Next.js App Router param typing issue
 ) {
   try {
     const { userId } = await auth();
     if (!userId) return new NextResponse("Unauthorized", { status: 401 });
 
-    // ✅ Safely get courseId from params
-    const courseId = params.courseId;
+    const courseId = context.params.courseId;
 
     if (!mongoose.Types.ObjectId.isValid(courseId)) {
       return new NextResponse("Invalid course ID", { status: 400 });
