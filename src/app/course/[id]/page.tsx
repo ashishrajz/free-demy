@@ -1,3 +1,7 @@
+// app/course/[id]/page.tsx
+
+'use client';
+
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { connectDB } from "@/lib/db";
@@ -16,18 +20,16 @@ import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
 import { BadgeCheckIcon } from "lucide-react";
 
-// dynamic import for ratings list
 const RatingsList = dynamic(() => import("@/components/course-actions/RatingsList"), {
   loading: () => <p>Loading ratings...</p>,
 });
 
-// Optional static metadata
 export const metadata: Metadata = {
   title: "Course Detail",
 };
 
-// ✅ This is all you need — no custom interface or PageProps type required
-export default async function CoursePage({ params }: { params: { id: string } }) {
+// ✅ Use 'any' to avoid type hell
+export default async function CoursePage({ params }: any) {
   await connectDB();
 
   if (!mongoose.Types.ObjectId.isValid(params.id)) {
@@ -35,6 +37,8 @@ export default async function CoursePage({ params }: { params: { id: string } })
   }
 
   const course = await Course.findById(params.id).lean();
+  if (!course) return notFound();
+
   const ratingStats = await Rating.aggregate([
     { $match: { courseId: new mongoose.Types.ObjectId(params.id) } },
     {
@@ -45,8 +49,6 @@ export default async function CoursePage({ params }: { params: { id: string } })
       },
     },
   ]);
-
-  if (!course) return notFound();
 
   const courseRating = ratingStats[0] || { avgRating: 0, totalRatings: 0 };
   const totalLessons = course.sections.reduce(
