@@ -10,7 +10,11 @@ import AddToWishlistButton from "@/components/course-actions/AddToWishlistButton
 import EnrollNowButton from "@/components/course-actions/EnrollNowButton";
 import { currentUser } from "@clerk/nextjs/server";
 import { getUserByClerkId } from "@/actions/user.actions";
-import RatingForm from "@/components/course-actions/RatingForm";
+const RatingForm = dynamic(() => import("@/components/course-actions/RatingForm"), {
+  ssr: false,
+  loading: () => <p>Loading rating form...</p>,
+});
+
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
