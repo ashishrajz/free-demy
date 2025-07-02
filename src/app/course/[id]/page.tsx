@@ -10,10 +10,8 @@ import AddToWishlistButton from "@/components/course-actions/AddToWishlistButton
 import EnrollNowButton from "@/components/course-actions/EnrollNowButton";
 import { currentUser } from "@clerk/nextjs/server";
 import { getUserByClerkId } from "@/actions/user.actions";
-const RatingForm = dynamic(() => import("@/components/course-actions/RatingForm"), {
-  ssr: false,
-  loading: () => <p>Loading rating form...</p>,
-});
+import RatingFormWrapper from "@/components/course-actions/RatingFormWrapper";
+
 
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
@@ -139,10 +137,8 @@ export default async function CoursePage({ params }: PageProps) {
         {isEnrolled && (
           <div className="mt-10">
             <h3 className="text-2xl font-semibold mb-2">Rate this course</h3>
-            <RatingForm
-              courseId={course._id.toString()}
-              userId={dbUser?._id.toString()}
-            />
+            <RatingFormWrapper courseId={course._id.toString()} userId={dbUser?._id.toString()} />
+
           </div>
         )}
 
