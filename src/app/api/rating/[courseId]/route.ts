@@ -3,12 +3,17 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Rating from "@/lib/models/rating.model";
 
-export async function GET(_: Request, { params }: { params: { courseId: string } }) {
+export async function GET(
+  request: Request,
+  context: { params: { courseId: string } }
+) {
   try {
     await connectDB();
 
-    const ratings = await Rating.find({ courseId: params.courseId })
-      .populate("userId", "name image") // Populate user's name and image
+    const courseId = context.params.courseId;
+
+    const ratings = await Rating.find({ courseId })
+      .populate("userId", "name image")
       .sort({ createdAt: -1 });
 
     return NextResponse.json(ratings);
