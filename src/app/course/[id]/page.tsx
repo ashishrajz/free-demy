@@ -1,7 +1,3 @@
-// app/course/[id]/page.tsx
-
-'use client';
-
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { connectDB } from "@/lib/db";
@@ -24,12 +20,18 @@ const RatingsList = dynamic(() => import("@/components/course-actions/RatingsLis
   loading: () => <p>Loading ratings...</p>,
 });
 
+// ✅ Works in server component — export metadata
 export const metadata: Metadata = {
   title: "Course Detail",
 };
 
-// ✅ Use 'any' to avoid type hell
-export default async function CoursePage({ params }: any) {
+interface PageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default async function CoursePage({ params }: PageProps) {
   await connectDB();
 
   if (!mongoose.Types.ObjectId.isValid(params.id)) {
@@ -133,7 +135,10 @@ export default async function CoursePage({ params }: any) {
         {isEnrolled && (
           <div className="mt-10">
             <h3 className="text-2xl font-semibold mb-2">Rate this course</h3>
-            <RatingForm courseId={course._id.toString()} userId={dbUser?._id.toString()} />
+            <RatingForm
+              courseId={course._id.toString()}
+              userId={dbUser?._id.toString()}
+            />
           </div>
         )}
 
@@ -147,3 +152,4 @@ export default async function CoursePage({ params }: any) {
     </div>
   );
 }
+
