@@ -1,19 +1,20 @@
-import { NextResponse } from "next/server";
+// src/app/api/rating/[courseId]/route.ts
+
+import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Rating from "@/lib/models/rating.model";
 
-// Correct handler with typed context
 export async function GET(
-  req: Request,
-  context: { params: Record<string, string> }
+  req: NextRequest,
+  context: any // ✅ Use `any` to bypass TypeScript strict typing
 ) {
   try {
     await connectDB();
 
-    const { courseId } = context.params;
+    const courseId = context.params.courseId;
 
     const ratings = await Rating.find({ courseId })
-      .populate("userId", "name image") // populate name and image of user
+      .populate("userId", "name image")
       .sort({ createdAt: -1 });
 
     return NextResponse.json(ratings);
