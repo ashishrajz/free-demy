@@ -1,12 +1,19 @@
 "use client";
 
-import RatingForm from "./RatingForm";
+import dynamic from "next/dynamic";
 
-interface Props {
+const RatingForm = dynamic(() => import("./RatingForm"), {
+  ssr: false,
+  loading: () => <p>Loading rating form...</p>,
+});
+
+export default function RatingFormWrapper({
+  courseId,
+  userId,
+}: {
   courseId: string;
-  userId: string;
-}
-
-export default function RatingFormWrapper({ courseId, userId }: Props) {
+  userId?: string;
+}) {
+  if (!userId) return null;
   return <RatingForm courseId={courseId} userId={userId} />;
 }
