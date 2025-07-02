@@ -1,13 +1,14 @@
-// /app/api/cart/[id]/route.ts
+// src/app/api/cart/[id]/route.ts
+
+import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
 import { connectDB } from "@/lib/db";
 import User from "@/lib/models/user.model";
-import { NextResponse } from "next/server";
 
-// ✅ Fix: explicitly define the context argument using `NextRequest` and typed context
+// ✅ The correct handler signature for App Router API routes
 export async function DELETE(
-  req: Request,
-  context: { params: { id: string } }  // ✅ context must be defined like this
+  req: NextRequest,
+  context: { params: { id: string } }
 ) {
   await connectDB();
 
@@ -25,4 +26,3 @@ export async function DELETE(
 
   return NextResponse.json({ success: true });
 }
-
