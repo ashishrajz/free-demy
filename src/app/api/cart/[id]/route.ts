@@ -14,5 +14,5 @@ export async function DELETE(_: any, { params }: { params: { id: string } }) {
     { clerkId: user.id },
     { $pull: { cart: params.id } }
   );
-  return Response.json({ success: true });
+  return NextResponse.json({ success: true });
 }
