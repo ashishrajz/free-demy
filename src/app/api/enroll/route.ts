@@ -1,10 +1,11 @@
-// File: src/app/api/enroll/add/route.ts
+// src/app/api/enroll/add/route.ts
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import mongoose from "mongoose";
+
 import { connectDB } from "@/lib/db";
 import User from "@/lib/models/user.model";
 import Course from "@/lib/models/course.model";
-import mongoose from "mongoose";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2023-10-16",
@@ -32,27 +33,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: "User not found" }, { status: 404 });
     }
 
-    for (const courseId of courseIds) {
-      const course = await Course.findById(courseId);
-      if (!course) continue;
+    // Convert courseIds to ObjectIds to prevent type issues
+    const objectIdCourses = courseIds.map((id: string) => new mongoose.Types.ObjectId(id));
 
-      const courseObjectId = new mongoose.Types.ObjectId(course._id.toString());
-
-      const isAlreadyEnrolled = user.enrolledCourses.some((id) =>
-        id.equals(courseObjectId)
-      );
-
-      if (!isAlreadyEnrolled) {
-        user.enrolledCourses.push(courseObjectId);
-
-        // Optional: remove from cart if present
-        user.cart = user.cart.filter(
-          (id) => !id.equals(courseObjectId)
-        );
+    await User.updateOne(
+      { _id: userId },
+      {
+        $addToSet: { enrolledCourses: { $each: objectIdCourses } },
+        $pull: { cart: { $in: objectIdCourses } },
       }
-    }
-
-    await user.save();
+    );
 
     return NextResponse.json({ success: true });
   } catch (err) {
