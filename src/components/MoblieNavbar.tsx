@@ -10,11 +10,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { axiosInstance } from "@/lib/axios";
-import { UserButton } from "@clerk/nextjs";
-import ModeToggle from "./ModeToggle";
 import { DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-
+import { useUser, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
+import ModeToggle from "./ModeToggle";
 
 interface Course {
   _id: string;
@@ -28,6 +27,8 @@ export default function MobileNavbar() {
   const [categories, setCategories] = useState<string[]>([]);
   const [courses, setCourses] = useState<Record<string, Course[]>>({});
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+
+  const { user } = useUser();
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -105,37 +106,33 @@ export default function MobileNavbar() {
         </div>
       </div>
 
-      {/* Circular Close Button - Outside Drawer */}
+      {/* Close Button */}
       {open && (
-  <button
-    onClick={() => {
-      setOpen(false);
-      setShowCourses(false);
-      setActiveCategory(null);
-    }}
-    className="fixed top-4 left-[300px] z-[9999] bg-white dark:bg-neutral-900 text-black dark:text-white p-2 rounded-full border border-gray-300 dark:border-gray-700 shadow-lg"
-  >
-    <X className="w-6 h-6" />
-  </button>
-)}
-
+        <button
+          onClick={() => {
+            setOpen(false);
+            setShowCourses(false);
+            setActiveCategory(null);
+          }}
+          className="fixed top-4 left-[300px] z-[9999] bg-white dark:bg-neutral-900 text-black dark:text-white p-2 rounded-full border border-gray-300 dark:border-gray-700 shadow-lg"
+        >
+          <X className="w-6 h-6" />
+        </button>
+      )}
 
       {/* Sheet Drawer */}
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent
-
-          side="left"
-          className="w-[280px] px-5 pt-10 overflow-y-auto"
-        >
+        <SheetContent side="left" className="w-[280px] px-5 pt-10 overflow-y-auto">
           <VisuallyHidden>
-    <DialogTitle>Navigation Menu</DialogTitle>
-  </VisuallyHidden>
+            <DialogTitle>Navigation Menu</DialogTitle>
+          </VisuallyHidden>
+
           {!showCourses ? (
             <div className="space-y-4">
               <h2 className="text-lg font-semibold mb-4">Menu</h2>
 
               <nav className="space-y-3 pl-2">
-              <Link
+                <Link
                   href="/"
                   className="block py-2 px-3 rounded-md hover:bg-purple-100 dark:hover:bg-purple-900"
                 >
@@ -166,7 +163,7 @@ export default function MobileNavbar() {
                   Teach on Freedemy
                 </Link>
 
-                {/* Category Section */}
+                {/* Categories */}
                 <div className="mt-4">
                   <h3 className="text-md font-medium mb-2">Categories</h3>
                   <ul className="space-y-2">
@@ -184,10 +181,22 @@ export default function MobileNavbar() {
                 </div>
               </nav>
 
-              {/* Theme + User */}
+              {/* Theme + Auth Section */}
               <div className="pt-6 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between">
                 <ModeToggle />
-                <UserButton />
+
+                {user?.id ? (
+                  <UserButton afterSignOutUrl="/" />
+                ) : (
+                  <div className="flex gap-2">
+                    <SignInButton mode="modal">
+                      <Button size="sm" variant="outline">Login</Button>
+                    </SignInButton>
+                    <SignUpButton mode="modal">
+                      <Button size="sm" variant="default">Sign up</Button>
+                    </SignUpButton>
+                  </div>
+                )}
               </div>
             </div>
           ) : (
