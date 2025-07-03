@@ -1,3 +1,5 @@
+// app/course/[id]/page.tsx
+
 import { notFound } from "next/navigation";
 import { connectDB } from "@/lib/db";
 import Course from "@/lib/models/course.model";
@@ -14,19 +16,10 @@ import RatingsListWrapper from "@/components/course-actions/RatingsListWrapper";
 import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
 import { BadgeCheckIcon } from "lucide-react";
-
 import { type Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Course Detail",
-};
-
-
-
-type CoursePageProps = {
-  params: {
-    id: string;
-  };
 };
 
 export default async function CoursePage({ params }: any) {
@@ -36,13 +29,7 @@ export default async function CoursePage({ params }: any) {
     notFound();
   }
 
-  // rest of your logic
-}
-
-  
   await connectDB();
-
- 
 
   if (!mongoose.Types.ObjectId.isValid(courseId)) notFound();
 
