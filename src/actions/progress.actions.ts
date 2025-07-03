@@ -1,5 +1,5 @@
 // src/actions/progress.ts
-import Progress from "@/lib/models/userProgress.moel";
+import Progress from "@/lib/models/userProgress.model";
 import { connectDB } from "@/lib/db";
 
 export const getProgress = async (userId: string, courseId: string) => {
