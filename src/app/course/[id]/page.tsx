@@ -21,13 +21,16 @@ export const metadata: Metadata = {
   title: "Course Detail",
 };
 
-type Props = {
+
+
+type CoursePageProps = {
   params: {
     id: string;
   };
 };
 
-export default async function CoursePage({ params }: Props) {
+export default async function CoursePage({ params }: CoursePageProps) {
+  const courseId = params.id;
   await connectDB();
 
   const courseId = params.id;
