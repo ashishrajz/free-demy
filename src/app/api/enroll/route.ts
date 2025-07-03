@@ -1,10 +1,8 @@
-// app/api/enroll/route.ts
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { connectDB } from "@/lib/db";
 import User from "@/lib/models/user.model";
 
-// ✅ No apiVersion needed here!
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(req: Request) {
@@ -32,8 +30,8 @@ export async function POST(req: Request) {
     await User.updateOne(
       { _id: userId },
       {
-        $addToSet: { enrolledCourses: { $each: courseIds } },
-        $pull: { cart: { $in: courseIds } },
+        $addToSet: { enrolledCourses: { $each: courseIds.map(id => new mongoose.Types.ObjectId(id)) } },
+        $pull: { cart: { $in: courseIds.map(id => new mongoose.Types.ObjectId(id)) } },
       }
     );
 
