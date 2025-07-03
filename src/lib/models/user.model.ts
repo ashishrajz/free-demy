@@ -1,6 +1,12 @@
 // File: /lib/models/user.model.ts
 
-import mongoose, { Schema, Document, model, models } from "mongoose";
+import mongoose, {
+  Schema,
+  Document,
+  model,
+  models,
+  Model,
+} from "mongoose";
 
 // Interface for a course progress entry
 interface ICourseProgress {
@@ -36,7 +42,7 @@ const CourseProgressSchema = new Schema<ICourseProgress>(
       },
     ],
   },
-  { _id: false } // prevents generating _id for each progress entry
+  { _id: false }
 );
 
 // Main user schema
@@ -59,6 +65,6 @@ const UserSchema = new Schema<IUser>(
   { timestamps: true }
 );
 
-// Export model, ensuring single registration
-export default models.User || model<IUser>("User", UserSchema);
-
+// ✅ Correctly typed model export
+const User: Model<IUser> = models.User || model<IUser>("User", UserSchema);
+export default User;
