@@ -1,8 +1,11 @@
+// src/app/api/enroll/add/route.ts
+
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { connectDB } from "@/lib/db";
 import Course from "@/lib/models/course.model";
 import User from "@/lib/models/user.model";
+import mongoose from "mongoose";
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,8 +29,16 @@ export async function POST(req: NextRequest) {
       return new NextResponse("User or course not found", { status: 404 });
     }
 
-    if (!user.enrolledCourses.includes(course._id)) {
-      user.enrolledCourses.push(course._id);
+    // Convert course._id to ObjectId
+    const courseObjectId = new mongoose.Types.ObjectId(course._id);
+
+    // Use .some and .equals to check if course is already enrolled
+    const alreadyEnrolled = user.enrolledCourses.some((id) =>
+      id.equals(courseObjectId)
+    );
+
+    if (!alreadyEnrolled) {
+      user.enrolledCourses.push(courseObjectId);
       await user.save();
     }
 
