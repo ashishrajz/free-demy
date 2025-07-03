@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import mongoose from "mongoose";
 import { connectDB } from "@/lib/db";
 import User from "@/lib/models/user.model";
 
@@ -30,8 +31,12 @@ export async function POST(req: Request) {
     await User.updateOne(
       { _id: userId },
       {
-        $addToSet: { enrolledCourses: { $each: courseIds.map(id => new mongoose.Types.ObjectId(id)) } },
-        $pull: { cart: { $in: courseIds.map(id => new mongoose.Types.ObjectId(id)) } },
+        $addToSet: {
+          enrolledCourses: { $each: courseIds.map(id => new mongoose.Types.ObjectId(id)) },
+        },
+        $pull: {
+          cart: { $in: courseIds.map(id => new mongoose.Types.ObjectId(id)) },
+        },
       }
     );
 
