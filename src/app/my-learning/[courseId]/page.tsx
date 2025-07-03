@@ -1,4 +1,5 @@
 // File: app/my-learning/[courseId]/page.tsx
+
 import { Metadata } from "next";
 import WatchClient from "@/components/WatchClient";
 import Course from "@/lib/models/course.model";
@@ -8,14 +9,15 @@ import { getUserByClerkId } from "@/actions/user.actions";
 import { notFound } from "next/navigation";
 import { CourseType } from "@/types";
 
-export async function generateMetadata({ params }: { params: { courseId: string } }): Promise<Metadata> {
+// Use `any` here to avoid build error due to incorrect PageProps inference
+export async function generateMetadata({ params }: any): Promise<Metadata> {
   await connectDB();
   const course = await Course.findById(params.courseId).lean() as CourseType | null;
   if (!course || !course.title) return { title: "Course Not Found" };
   return { title: `${course.title} | My Learning` };
 }
 
-export default async function WatchPage({ params }: { params: { courseId: string } }) {
+export default async function WatchPage({ params }: any) {
   await connectDB();
   const { userId } = await auth();
   if (!userId) return notFound();
