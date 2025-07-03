@@ -1,15 +1,17 @@
+// File: app/search/page.tsx
+
 "use client";
 
 export const dynamic = "force-dynamic";
 
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
 import { CourseType } from "@/types";
 import { axiosInstance } from "@/lib/axios";
 import { Skeleton } from "@/components/ui/skeleton";
 import CourseCard from "@/components/CourseCard";
 
-export default function SearchPage() {
+function SearchPageContent() {
   const searchParams = useSearchParams();
   const q = searchParams.get("q");
 
@@ -69,5 +71,13 @@ export default function SearchPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<p className="text-center py-20">Loading search...</p>}>
+      <SearchPageContent />
+    </Suspense>
   );
 }
