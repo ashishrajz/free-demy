@@ -14,10 +14,9 @@ export async function POST(req: NextRequest) {
   const { courseId } = await req.json();
 
   await connectDB();
-  const dbUserId = await getDbUserId(userId);
+  const dbUserId = await getDbUserId(userId); // ✅ already a string
 
   const user = await User.findById(dbUserId);
-
   if (!user) return new NextResponse("User not found", { status: 404 });
 
   // ✅ Prevent adding if already enrolled
@@ -30,7 +29,7 @@ export async function POST(req: NextRequest) {
     return new NextResponse("Course already in cart", { status: 200 });
   }
 
-  const updatedCart = await addToCart(dbUserId, courseId);
+  const updatedCart = await addToCart(dbUserId, courseId); // ✅ dbUserId is string now
 
   return NextResponse.json(updatedCart);
 }
