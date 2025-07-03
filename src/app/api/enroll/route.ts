@@ -1,3 +1,4 @@
+// File: src/app/api/enroll/add/route.ts
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { connectDB } from "@/lib/db";
@@ -31,24 +32,27 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: "User not found" }, { status: 404 });
     }
 
-    // Convert courseIds to ObjectIds
-    const objectIds = courseIds.map((id: string) => new mongoose.Types.ObjectId(id));
+    for (const courseId of courseIds) {
+      const course = await Course.findById(courseId);
+      if (!course) continue;
 
-    // Filter out courses the user is already enrolled in
-    const newCourses = objectIds.filter((id) => 
-      !user.enrolledCourses.some((enrolledId) => enrolledId.equals(id))
-    );
+      const courseObjectId = new mongoose.Types.ObjectId(course._id.toString());
 
-    if (newCourses.length > 0) {
-      user.enrolledCourses.push(...newCourses);
-
-      // Remove from cart if present
-      user.cart = user.cart.filter(
-        (cartId) => !newCourses.some((id) => id.equals(cartId))
+      const isAlreadyEnrolled = user.enrolledCourses.some((id) =>
+        id.equals(courseObjectId)
       );
 
-      await user.save();
+      if (!isAlreadyEnrolled) {
+        user.enrolledCourses.push(courseObjectId);
+
+        // Optional: remove from cart if present
+        user.cart = user.cart.filter(
+          (id) => !id.equals(courseObjectId)
+        );
+      }
     }
+
+    await user.save();
 
     return NextResponse.json({ success: true });
   } catch (err) {
