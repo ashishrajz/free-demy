@@ -1,13 +1,9 @@
-// app/dashboard/edit-course/[id]/page.tsx
+// app/instructors/dashboard/edit-course/[id]/page.tsx
+
 import UploadCourseForm from "@/components/UploadCourseForm";
 import { getCourseById } from "@/actions/course.actions";
 
-interface EditCoursePageProps {
-  params: { id: string };
-}
-
-export default async function EditCoursePage({ params }: EditCoursePageProps) {
-  const course = await getCourseById(params.id); // Must be a Promise
-
+export default async function EditCoursePage({ params }: any) {
+  const course = await getCourseById(params.id);
   return <UploadCourseForm initialCourseData={course} />;
 }
