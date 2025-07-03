@@ -7,7 +7,8 @@ import { connectDB } from "@/lib/db";
 export const addToCart = async (userId: string, courseId: string) => {
   await connectDB();
 
-  const user = await User.findById(userId);
+  const user = await User.findById(userId) as IUser | null;
+
   if (!user) throw new Error("User not found");
 
   const courseObjectId = new mongoose.Types.ObjectId(courseId);
