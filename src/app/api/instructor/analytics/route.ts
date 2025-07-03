@@ -13,7 +13,7 @@ export async function GET() {
   const courses = await Course.find({ instructorId: user.id });
   const courseIds = courses.map((c) => c._id);
 
-  const enrollments = await Enrollment.find({ courseId: { $in: courseIds } }); ✅
+  const enrollments = await Enrollment.find({ courseId: { $in: courseIds } }); 
 
   const totalRevenue = courses.reduce((sum, c) => sum + (c.price || 0), 0);
 
