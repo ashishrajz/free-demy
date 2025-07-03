@@ -1,4 +1,3 @@
-// src/app/api/cart/add/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { connectDB } from "@/lib/db";
@@ -12,7 +11,9 @@ export async function POST(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) return new NextResponse("Unauthorized", { status: 401 });
 
-  const { courseId } = (await req.json()) as { courseId: string };
+  // ✅ Explicitly assert body type to fix TS error
+  const body = (await req.json()) as { courseId: string };
+  const courseId = body.courseId;
 
   if (!mongoose.Types.ObjectId.isValid(courseId)) {
     return new NextResponse("Invalid course ID", { status: 400 });
@@ -26,14 +27,15 @@ export async function POST(req: NextRequest) {
 
   const courseObjectId = new mongoose.Types.ObjectId(courseId);
 
-  if (user.enrolledCourses.includes(courseObjectId)) {
+  // Fix: Compare ObjectId not string
+  if (user.enrolledCourses.some(id => id.equals(courseObjectId))) {
     return new NextResponse("You already own this course", { status: 400 });
   }
 
-  if (user.cart.includes(courseObjectId)) {
+  if (user.cart.some(id => id.equals(courseObjectId))) {
     return new NextResponse("Course already in cart", { status: 200 });
   }
 
-  const updatedCart = await addToCart(dbUserId, courseId); // ✅ courseId is now clearly typed
+  const updatedCart = await addToCart(dbUserId, courseId);
   return NextResponse.json(updatedCart);
 }
