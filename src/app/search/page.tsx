@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CourseType } from "@/types";
@@ -21,8 +23,8 @@ export default function SearchPage() {
       try {
         setLoading(true);
         const res = await axiosInstance.get(`/api/course/search?q=${encodeURIComponent(q)}`);
-        console.log("🔍 Search API response:", res.data); // 👈 Add this
-        setCourses(res.data.courses); // Ensure your route returns { courses: [...] }
+        console.log("🔍 Search API response:", res.data);
+        setCourses(res.data.courses);
       } catch (err) {
         console.error("Failed to fetch search results:", err);
         setCourses([]);
