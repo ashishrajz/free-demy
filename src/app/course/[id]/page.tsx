@@ -29,8 +29,17 @@ type CoursePageProps = {
   };
 };
 
-export default async function CoursePage({ params }: CoursePageProps) {
-  const courseId = params.id;
+export default async function CoursePage({ params }: any) {
+  const courseId = params?.id;
+
+  if (!courseId || typeof courseId !== "string") {
+    notFound();
+  }
+
+  // rest of your logic
+}
+
+  
   await connectDB();
 
  
