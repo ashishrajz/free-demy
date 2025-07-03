@@ -91,6 +91,11 @@ const courseSchema = new Schema<ICourse>(
     instructorId: { type: String, required: true },
     authorName: { type: String, required: true },
     sections: [sectionSchema],
+    status: {
+      type: String,
+      enum: ["draft", "published"],
+      default: "draft",
+    },
   },
   { timestamps: true }
 );
