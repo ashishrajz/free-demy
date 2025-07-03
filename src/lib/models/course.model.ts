@@ -44,6 +44,7 @@ export interface ICourse extends Document {
   sections: ISection[];
   createdAt: Date;
   updatedAt: Date;
+  status: "draft" | "published";
 }
 
 // -----------------------------
