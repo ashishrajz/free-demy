@@ -61,3 +61,4 @@ const UserSchema = new Schema<IUser>(
 
 // Export model, ensuring single registration
 export default models.User || model<IUser>("User", UserSchema);
+
