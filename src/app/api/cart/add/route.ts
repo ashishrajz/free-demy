@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { addToCart } from "@/actions/cart";
+import { addToCart } from "@/actions/cart.actions";
 import { getDbUserId } from "@/actions/user.actions";
 import User from "@/lib/models/user.model";
 import { connectDB } from "@/lib/db";
