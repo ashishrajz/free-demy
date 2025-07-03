@@ -34,7 +34,6 @@ export async function POST(req: NextRequest) {
     return new NextResponse("Course already in cart", { status: 200 });
   }
 
-  const updatedCart = await addToCart(dbUserId, courseId);
-
+  const updatedCart = await addToCart(dbUserId, courseId); // ✅ courseId is now clearly typed
   return NextResponse.json(updatedCart);
 }
