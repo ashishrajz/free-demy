@@ -1,4 +1,5 @@
 // src/actions/enrollment.ts
+import mongoose from "mongoose";
 import { connectDB } from "@/lib/db";
 import User from "@/lib/models/user.model";
 
@@ -7,10 +8,15 @@ export const enrollInCourse = async (userId: string, courseId: string) => {
   const user = await User.findById(userId);
   if (!user) throw new Error("User not found");
 
-  if (!user.enrolledCourses.includes(courseId)) {
-    user.enrolledCourses.push(courseId);
+  const courseObjectId = new mongoose.Types.ObjectId(courseId);
+
+  const alreadyEnrolled = user.enrolledCourses.some((id) => id.equals(courseObjectId));
+
+  if (!alreadyEnrolled) {
+    user.enrolledCourses.push(courseObjectId);
     await user.save();
   }
+
   return user.enrolledCourses;
 };
 
