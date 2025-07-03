@@ -33,7 +33,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
   const courseId = params.id;
   await connectDB();
 
-  const courseId = params.id;
+ 
 
   if (!mongoose.Types.ObjectId.isValid(courseId)) notFound();
 
