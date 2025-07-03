@@ -1,4 +1,5 @@
-import mongoose, { Schema, Document, models } from "mongoose";
+// models/enrollment.model.ts
+import mongoose, { Schema, Document, Model, models, model } from "mongoose";
 
 export interface EnrollmentDocument extends Document {
   userId: string;
@@ -8,22 +9,15 @@ export interface EnrollmentDocument extends Document {
 
 const EnrollmentSchema = new Schema<EnrollmentDocument>(
   {
-    userId: {
-      type: String,
-      required: true,
-    },
-    courseId: {
-      type: Schema.Types.ObjectId,
-      ref: "Course",
-      required: true,
-    },
-    enrolledAt: {
-      type: Date,
-      default: Date.now,
-    },
+    userId: { type: String, required: true },
+    courseId: { type: Schema.Types.ObjectId, ref: "Course", required: true },
+    enrolledAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );
 
-export default models.Enrollment ||
-  mongoose.model<EnrollmentDocument>("Enrollment", EnrollmentSchema);
+// ✅ Explicitly type the model
+const Enrollment: Model<EnrollmentDocument> =
+  models.Enrollment || model<EnrollmentDocument>("Enrollment", EnrollmentSchema);
+
+export default Enrollment;
