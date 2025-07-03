@@ -1,16 +1,72 @@
-import mongoose, { Schema, model, models } from "mongoose";
+// src/lib/models/course.model.ts
 
-const lessonSchema = new Schema({
-  title: { type: String, required: true },
-  videoUrl: { type: String, required: true },
-});
+import mongoose, {
+  Schema,
+  model,
+  models,
+  Document,
+  Model,
+  Types,
+} from "mongoose";
 
-const sectionSchema = new Schema({
-  title: { type: String, required: true },
-  lessons: [lessonSchema],
-});
+// -----------------------------
+// Interfaces
+// -----------------------------
 
-const courseSchema = new Schema(
+interface ILesson {
+  title: string;
+  videoUrl: string;
+}
+
+interface ISection {
+  title: string;
+  lessons: ILesson[];
+}
+
+export interface ICourse extends Document {
+  title: string;
+  description?: string;
+  price: number;
+  category:
+    | "Development"
+    | "Business"
+    | "Trading"
+    | "DSA"
+    | "Editing"
+    | "Design"
+    | "Marketing"
+    | "Health & Fitness"
+    | "Content Creation"
+    | "AI";
+  thumbnailUrl: string;
+  instructorId: string; // Clerk ID
+  authorName: string;
+  sections: ISection[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// -----------------------------
+// Schemas
+// -----------------------------
+
+const lessonSchema = new Schema<ILesson>(
+  {
+    title: { type: String, required: true },
+    videoUrl: { type: String, required: true },
+  },
+  { _id: false }
+);
+
+const sectionSchema = new Schema<ISection>(
+  {
+    title: { type: String, required: true },
+    lessons: [lessonSchema],
+  },
+  { _id: false }
+);
+
+const courseSchema = new Schema<ICourse>(
   {
     title: { type: String, required: true },
     description: String,
@@ -31,21 +87,17 @@ const courseSchema = new Schema(
       ],
       required: true,
     },
-    thumbnailUrl: {
-      type: String,
-      required: true,
-    },
-    instructorId: {
-      type: String, // Clerk user ID
-      required: true,
-    },
-    authorName: {
-      type: String,
-      required: true,
-    },
+    thumbnailUrl: { type: String, required: true },
+    instructorId: { type: String, required: true },
+    authorName: { type: String, required: true },
     sections: [sectionSchema],
   },
   { timestamps: true }
 );
 
-export default models.Course || model("Course", courseSchema);
+// -----------------------------
+// Model Export
+// -----------------------------
+
+const Course: Model<ICourse> = models.Course || model<ICourse>("Course", courseSchema);
+export default Course;
