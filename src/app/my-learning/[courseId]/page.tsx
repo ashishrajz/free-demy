@@ -8,26 +8,38 @@ import { auth } from "@clerk/nextjs/server";
 import { getUserByClerkId } from "@/actions/user.actions";
 import { notFound } from "next/navigation";
 import { CourseType } from "@/types";
+import mongoose from "mongoose";
 
-// Use `any` here to avoid build error due to incorrect PageProps inference
+// Use `any` to avoid inference errors on server functions
 export async function generateMetadata({ params }: any): Promise<Metadata> {
   await connectDB();
-  const course = await Course.findById(params.courseId).lean() as CourseType | null;
-  if (!course || !course.title) return { title: "Course Not Found" };
+
+  const courseDoc = await Course.findById(params.courseId).lean();
+  if (!courseDoc || !courseDoc.title) return { title: "Course Not Found" };
+
+  const course = JSON.parse(JSON.stringify(courseDoc)) as CourseType;
   return { title: `${course.title} | My Learning` };
 }
 
 export default async function WatchPage({ params }: any) {
   await connectDB();
+
   const { userId } = await auth();
   if (!userId) return notFound();
 
   const user = await getUserByClerkId(userId);
-  const course = await Course.findById(params.courseId).lean();
+  const courseDoc = await Course.findById(params.courseId).lean();
 
-  if (!user?.enrolledCourses.includes(params.courseId) || !course) return notFound();
+  if (!courseDoc || !user) return notFound();
 
-  const plainCourse = JSON.parse(JSON.stringify(course));
+  // 🧠 Ensure the courseId exists in user's enrolledCourses
+  const isEnrolled = user.enrolledCourses.some((id: mongoose.Types.ObjectId) =>
+    id.equals(new mongoose.Types.ObjectId(params.courseId))
+  );
+
+  if (!isEnrolled) return notFound();
+
+  const plainCourse = JSON.parse(JSON.stringify(courseDoc)) as CourseType;
   const plainUser = JSON.parse(JSON.stringify(user));
 
   return <WatchClient user={plainUser} course={plainCourse} />;
