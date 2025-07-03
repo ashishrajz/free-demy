@@ -55,9 +55,10 @@ export default async function CoursePage({ params }: any) {
 
   const user = await currentUser();
   const dbUser = user ? await getUserByClerkId(user.id) : null;
-  const isEnrolled = dbUser?.enrolledCourses.some((id: mongoose.Types.ObjectId) =>
-  id.equals(new mongoose.Types.ObjectId(course._id))
+  const isEnrolled = dbUser?.enrolledCourses.some((id: any) =>
+  id.toString() === course._id.toString()
 );
+
 
 
   return (
