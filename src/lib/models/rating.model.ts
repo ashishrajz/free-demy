@@ -1,42 +1,25 @@
-// models/rating.model.ts
-import mongoose, { Schema, Document, models, model } from "mongoose";
+// src/lib/models/rating.model.ts
+import mongoose, { Schema, Document, model, models, Model } from "mongoose";
 
-// TypeScript interface for Rating document
-export interface IRating extends Document {
+export interface RatingDocument extends Document {
   userId: mongoose.Types.ObjectId;
   courseId: mongoose.Types.ObjectId;
   value: number;
   comment?: string;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
-const ratingSchema = new Schema<IRating>(
+const ratingSchema = new Schema<RatingDocument>(
   {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    courseId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Course",
-      required: true,
-    },
-    value: {
-      type: Number,
-      required: true,
-      min: 1,
-      max: 5,
-    },
-    comment: {
-      type: String,
-    },
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    courseId: { type: Schema.Types.ObjectId, ref: "Course", required: true },
+    value: { type: Number, required: true },
+    comment: { type: String },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-// Use `models.Rating` if it exists to avoid model redefinition errors
-export default models.Rating || model<IRating>("Rating", ratingSchema);
+// ✅ Ensure proper typing of the model
+const Rating: Model<RatingDocument> =
+  models.Rating || model<RatingDocument>("Rating", ratingSchema);
+
+export default Rating;
